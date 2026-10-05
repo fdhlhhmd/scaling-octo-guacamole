@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QR Studio</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<meta name="description" content="Create, brand, bulk-generate and scan QR codes. Works offline.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QR Studio">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--text:#14182b;--muted:#6a7189;--line:#e2e6f0;--accent:#4f46e5;--on:#fff;--danger:#d93a4a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1220;--card:#181c30;--text:#eef0fa;--muted:#99a0bd;--line:#2a3050;--accent:#7c83ff;--on:#0f1220;--danger:#ff6b7a}}
+:root[data-theme="dark"]{--bg:#0f1220;--card:#181c30;--text:#eef0fa;--muted:#99a0bd;--line:#2a3050;--accent:#7c83ff;--on:#0f1220;--danger:#ff6b7a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+.wrap{max-width:600px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:8px 0 4px}h2{font-size:1.05rem;margin:0}
+.sub{color:var(--muted);margin:0 0 16px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:18px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{flex:1;background:none;color:var(--muted);padding:10px 4px;min-height:40px}
+.tabs button.on{background:var(--accent);color:var(--on)}
+[hidden]{display:none!important}
+label{display:block;font-size:.82rem;font-weight:600;margin:0 0 5px}
+input[type=text],input[type=url],input[type=email],input[type=tel],input[type=search],input[type=datetime-local],select,textarea{width:100%;font:inherit;font-size:16px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-bottom:12px}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.two{display:flex;gap:10px}.two>div{flex:1;min-width:0}
+input[type=color]{width:100%;height:44px;padding:2px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer;margin-bottom:10px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 14px;cursor:pointer;min-height:44px}
+.primary{background:var(--accent);color:var(--on);width:100%}
+.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.danger{color:var(--danger)}
+.sm{padding:6px 12px;min-height:36px;font-size:.85rem}
+.note{color:var(--muted);font-size:.8rem;margin:0 0 12px}
+.err{color:var(--danger);font-size:.88rem;min-height:1.2em;margin:0 0 8px}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.logo img{width:40px;height:40px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
+.editbar{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:10px;padding:6px 12px;margin-bottom:12px;font-size:.85rem}
+.result{text-align:center}
+.result canvas{width:min(100%,260px);height:auto;image-rendering:pixelated;border-radius:8px;border:1px solid var(--line)}
+.rname{font-weight:700;margin:10px 0 2px;word-break:break-word}
+.rsum{color:var(--muted);font-size:.85rem;word-break:break-all;margin-bottom:12px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sync{color:var(--muted);font-size:.78rem;margin:0 0 10px}
+.empty{color:var(--muted);text-align:center;padding:18px 0;margin:0}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li canvas{width:64px;height:64px;border-radius:8px;border:1px solid var(--line);flex:none;image-rendering:pixelated;cursor:pointer}
+.info{flex:1;min-width:0}
+.info b,.info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info span{color:var(--muted);font-size:.8rem}
+.tag{display:inline-block!important;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:.7rem!important;margin-bottom:2px}
+.acts{display:flex;flex-direction:column;gap:5px}
+video{width:100%;border-radius:12px;background:#000;max-height:60vh}
+.out{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;word-break:break-all;white-space:pre-wrap;margin:12px 0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>QR Studio</h1>
+  <p class="sub">Create, brand, bulk-generate and scan QR codes. Works offline.</p>
+  <div class="tabs" id="tabs">
+    <button class="on" data-t="create">Create</button><button data-t="bulk">Bulk</button><button data-t="scan">Scan</button>
+  </div>
+
+  <section data-tab="create">
+    <div class="card">
+      <div class="editbar" id="editbar" hidden><span>Editing saved QR code</span><button class="ghost sm" id="cancel">Cancel</button></div>
+      <label for="type">Type</label><select id="type"></select>
+      <label for="name">Name</label>
+      <input id="name" type="text" maxlength="60" placeholder="e.g. Home WiFi" autocomplete="off">
+      <div id="fields"></div>
+    </div>
+  </section>
+
+  <section data-tab="bulk" hidden>
+    <div class="card">
+      <h2>Bulk URLs</h2>
+      <p class="note">One per line: <b>name, url</b> (or paste two columns from a spreadsheet). A line with only a URL is named after its domain. Download all as a ZIP.</p>
+      <textarea id="bulk" style="min-height:140px" placeholder="Event A, https://example.com/a&#10;Event B, https://example.com/b"></textarea>
+      <div class="row"><button class="ghost" id="csvbtn">Upload CSV</button><button class="primary" id="bulkgo">Generate ZIP</button></div>
+      <input type="file" id="csv" accept=".csv,.txt,.tsv,text/*" hidden>
+      <p class="err" id="bulkmsg" style="margin-top:10px"></p>
+    </div>
+  </section>
+
+  <section data-tab="style">
+    <div class="card" id="stylecard">
+      <h2 style="margin-bottom:12px">Design</h2>
+      <div class="two">
+        <div><label for="fg">QR colour</label><input id="fg" type="color" value="#000000"></div>
+        <div><label for="bg">Background</label><input id="bg" type="color" value="#ffffff"></div>
+      </div>
+      <p class="note" id="hint"></p>
+      <label>Centre logo (optional)</label>
+      <div class="logo"><img id="logoprev" alt="" hidden><button class="ghost sm" id="logobtn">Add logo</button><button class="ghost sm danger" id="logorm" hidden>Remove</button></div>
+      <input type="file" id="logofile" accept="image/*" hidden>
+      <p class="note" id="lognote" hidden>Error correction raised to High so the code stays scannable.</p>
+      <p class="err" id="err"></p>
+      <button class="primary" id="gen" data-tab-only="create">Generate QR code</button>
+    </div>
+  </section>
+
+  <section data-tab="scan" hidden>
+    <div class="card">
+      <h2 style="margin-bottom:12px">Scan a QR code</h2>
+      <video id="video" playsinline muted hidden></video>
+      <div class="row" style="margin-top:10px"><button class="primary" id="camgo">Start camera</button><button class="ghost" id="imgbtn">Scan image</button></div>
+      <input type="file" id="imgfile" accept="image/*" hidden>
+      <div id="scanres" hidden>
+        <div class="out" id="scantext"></div>
+        <div class="row"><button class="ghost" id="copy">Copy</button><a id="open" hidden target="_blank" rel="noopener noreferrer" style="flex:1;text-decoration:none"><button class="ghost" style="width:100%">Open link</button></a></div>
+      </div>
+      <p class="err" id="scanmsg" style="margin-top:10px"></p>
+    </div>
+  </section>
+
+  <div class="card result" id="result" hidden>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <div class="rname" id="rname"></div><div class="rsum" id="rsum"></div>
+    <div class="row"><button class="primary" id="dlpng">PNG</button><button class="primary" id="dlsvg">SVG</button></div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h2>History</h2><button class="ghost danger sm" id="clear" hidden>Clear all</button></div>
+    <input id="search" type="search" placeholder="Search by name or content" hidden>
+    <p class="sync" id="sync"></p>
+    <ul id="list"></ul>
+    <p class="empty" id="empty">No QR codes yet.</p>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="vendor/qrcode.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/jsQR.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var KEY = 'qrstudio:history';
+  var history = [], current = null, editingId = null, query = '', logo = null, tab = 'create';
+  var stream = null, timer = null, imgCache = {};
+  try { qrcode.stringToBytes = function(s){ return Array.from(new TextEncoder().encode(s)); }; } catch(e){}
+
+  var TYPES = {
+    url:{l:'URL',f:[['url','URL','url']]},
+    text:{l:'Plain text',f:[['text','Text','area']]},
+    email:{l:'Email',f:[['to','Email address','email'],['subject','Subject'],['body','Message','area']]},
+    sms:{l:'SMS',f:[['phone','Phone number','tel'],['body','Message','area']]},
+    wifi:{l:'WiFi network',f:[['ssid','Network name (SSID)'],['pass','Password'],['enc','Encryption','sel']]},
+    vcard:{l:'Contact (vCard)',f:[['fn','Full name'],['tel','Phone','tel'],['email','Email','email'],['org','Organisation']]},
+    event:{l:'Calendar event',f:[['title','Title'],['start','Starts','datetime-local'],['end','Ends','datetime-local'],['loc','Location']]}
+  };
+
+  /* ---------- storage + sync ---------- */
+  try { var raw = localStorage.getItem(KEY); if (raw) history = JSON.parse(raw) || []; } catch(e){ history = []; }
+  function setSync(t){ $('sync').textContent = t; }
+  function persist(){
+    try { localStorage.setItem(KEY, JSON.stringify(history)); setSync('Saved on this device'); }
+    catch(e){ setSync('Could not save: browser storage is full or blocked.'); }
+  }
+  setSync('Saved on this device');
+
+  function toast(m){ var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+  function slug(s){ return (s || 'qr').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'qr'; }
+
+  /* ---------- encoding ---------- */
+  function normalize(u){
+    u = (u || '').trim(); if (!u) return null;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) u = 'https://' + u;
+    try { var p = new URL(u); if (!p.hostname.includes('.') && p.hostname !== 'localhost') return null; return p.href; } catch(e){ return null; }
+  }
+  function esc(s){ return s.replace(/([\\;,:"])/g, '\\$1'); }
+  function dt(v){ return v.replace(/[-:]/g, '') + '00'; }
+  function encode(t, v){
+    function req(k, m){ if (!v[k] || !v[k].trim()) throw m; }
+    if (t === 'url') { var u = normalize(v.url); if (!u) throw 'Please enter a valid URL.'; return u; }
+    if (t === 'text') { req('text', 'Please enter some text.'); return v.text; }
+    if (t === 'email') { req('to', 'Please enter an email address.'); return 'mailto:' + v.to.trim() + '?subject=' + encodeURIComponent(v.subject || '') + '&body=' + encodeURIComponent(v.body || ''); }
+    if (t === 'sms') { req('phone', 'Please enter a phone number.'); return 'SMSTO:' + v.phone.trim() + ':' + (v.body || ''); }
+    if (t === 'wifi') { req('ssid', 'Please enter the network name.'); return 'WIFI:T:' + (v.enc || 'WPA') + ';S:' + esc(v.ssid) + ';P:' + esc(v.pass || '') + ';;'; }
+    if (t === 'vcard') { req('fn', 'Please enter a name for the contact.');
+      return ['BEGIN:VCARD','VERSION:3.0','FN:' + v.fn, v.org && 'ORG:' + v.org, v.tel && 'TEL:' + v.tel, v.email && 'EMAIL:' + v.email,'END:VCARD'].filter(Boolean).join('\n'); }
+    req('title', 'Please enter an event title.'); req('start', 'Please choose a start time.');
+    return ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT','SUMMARY:' + v.title,'DTSTART:' + dt(v.start), v.end && 'DTEND:' + dt(v.end), v.loc && 'LOCATION:' + v.loc,'END:VEVENT','END:VCALENDAR'].filter(Boolean).join('\n');
+  }
+
+  /* ---------- drawing ---------- */
+  function matrix(item){
+    var qr = qrcode(0, item.logo ? 'H' : 'M'); qr.addData(item.data); qr.make();
+    return { n: qr.getModuleCount(), d: function(r, c){ return qr.isDark(r, c); } };
+  }
+  function logoImg(src, cb){
+    var c = imgCache[src]; if (c && c.complete) return cb(c);
+    var i = new Image(); i.onload = function(){ imgCache[src] = i; cb(i); }; i.src = src;
+  }
+  function paint(canvas, item, cb){
+    var m = matrix(item), mg = 4, size = canvas.width, cell = size / (m.n + mg * 2), x = canvas.getContext('2d');
+    x.fillStyle = item.bg || '#fff'; x.fillRect(0, 0, size, size); x.fillStyle = item.fg || '#000';
+    for (var r = 0; r < m.n; r++) for (var c = 0; c < m.n; c++) if (m.d(r, c)) x.fillRect(Math.floor((c + mg) * cell), Math.floor((r + mg) * cell), Math.ceil(cell), Math.ceil(cell));
+    if (!item.logo) { if (cb) cb(); return; }
+    logoImg(item.logo, function(img){
+      var s = size * .22, p = s * .1, o = (size - s) / 2, k = Math.min(s / img.width, s / img.height), w = img.width * k, h = img.height * k;
+      x.fillStyle = item.bg || '#fff'; x.fillRect(o - p, o - p, s + p * 2, s + p * 2);
+      x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h); if (cb) cb();
+    });
+  }
+  function svgOf(item){
+    var m = matrix(item), mg = 4, t = m.n + mg * 2, p = '';
+    for (var r = 0; r < m.n; r++) for (var c = 0; c < m.n; c++) if (m.d(r, c)) p += 'M' + (c + mg) + ' ' + (r + mg) + 'h1v1h-1z';
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + t + ' ' + t + '" width="1024" height="1024" shape-rendering="crispEdges"><rect width="' + t + '" height="' + t + '" fill="' + (item.bg || '#fff') + '"/><path fill="' + (item.fg || '#000') + '" d="' + p + '"/>';
+    if (item.logo) { var l = t * .22, o = (t - l) / 2, q = l * .1; s += '<rect x="' + (o - q) + '" y="' + (o - q) + '" width="' + (l + q * 2) + '" height="' + (l + q * 2) + '" fill="' + (item.bg || '#fff') + '"/><image href="' + item.logo + '" x="' + o + '" y="' + o + '" width="' + l + '" height="' + l + '" preserveAspectRatio="xMidYMid meet"/>'; }
+    return s + '</svg>';
+  }
+  function pngBlob(item, size){
+    return new Promise(function(res){ var c = document.createElement('canvas'); c.width = c.height = size; paint(c, item, function(){ c.toBlob(res, 'image/png'); }); });
+  }
+  function saveFile(name, data){
+    var type = /\.svg$/.test(name) ? 'image/svg+xml' : /\.zip$/.test(name) ? 'application/zip' : 'image/png';
+    var blob = data instanceof Blob ? data : new Blob([data], { type: type });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+  function contrast(){
+    var L = function(h){ var v = [1,3,5].map(function(i){ var x = parseInt(h.substr(i,2),16) / 255; return x <= .03928 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); }); return .2126*v[0] + .7152*v[1] + .0722*v[2]; };
+    var a = L($('fg').value), b = L($('bg').value), r = (Math.max(a,b) + .05) / (Math.min(a,b) + .05);
+    $('hint').textContent = a > b ? 'Tip: a darker QR on a lighter background scans most reliably.' : r < 3 ? 'Low contrast: this may be hard to scan.' : '';
+  }
+
+  /* ---------- form ---------- */
+  Object.keys(TYPES).forEach(function(k){ var o = document.createElement('option'); o.value = k; o.textContent = TYPES[k].l; $('type').append(o); });
+  function buildFields(){
+    var h = '';
+    TYPES[$('type').value].f.forEach(function(f){
+      var id = 'f_' + f[0], k = f[2] || 'text';
+      h += '<label for="' + id + '">' + f[1] + '</label>';
+      if (k === 'area') h += '<textarea id="' + id + '"></textarea>';
+      else if (k === 'sel') h += '<select id="' + id + '"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select>';
+      else h += '<input id="' + id + '" type="' + k + '"' + (k === 'url' ? ' placeholder="https://example.com" inputmode="url" autocapitalize="off"' : '') + ' autocomplete="off">';
+    });
+    $('fields').innerHTML = h;
+  }
+  function values(){ var v = {}; TYPES[$('type').value].f.forEach(function(f){ v[f[0]] = $('f_' + f[0]).value; }); return v; }
+  function summary(item){ return (item.data || '').replace(/\s+/g, ' ').slice(0, 70); }
+  function setLogo(src){ logo = src; $('logoprev').hidden = $('logorm').hidden = $('lognote').hidden = !src; if (src) $('logoprev').src = src; $('logobtn').textContent = src ? 'Change logo' : 'Add logo'; }
+
+  function showTab(t){
+    tab = t;
+    document.querySelectorAll('#tabs button').forEach(function(b){ b.classList.toggle('on', b.dataset.t === t); });
+    document.querySelector('[data-tab=create]').hidden = t !== 'create';
+    document.querySelector('[data-tab=bulk]').hidden = t !== 'bulk';
+    document.querySelector('[data-tab=scan]').hidden = t !== 'scan';
+    document.querySelector('[data-tab=style]').hidden = t === 'scan';
+    $('gen').hidden = t !== 'create';
+    if (t !== 'scan') stopCam();
+  }
+
+  function show(item){
+    current = item; paint($('canvas'), item);
+    $('rname').textContent = item.name; $('rsum').textContent = summary(item); $('result').hidden = false;
+  }
+  function startEdit(item){
+    showTab('create'); editingId = item.id;
+    $('type').value = item.type; buildFields();
+    Object.keys(item.f || {}).forEach(function(k){ if ($('f_' + k)) $('f_' + k).value = item.f[k]; });
+    $('name').value = item.name; $('fg').value = item.fg || '#000000'; $('bg').value = item.bg || '#ffffff';
+    setLogo(item.logo || null); contrast();
+    $('gen').textContent = 'Save changes'; $('editbar').hidden = false; window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function stopEdit(){
+    editingId = null; $('gen').textContent = 'Generate QR code'; $('editbar').hidden = true;
+    $('name').value = ''; buildFields(); setLogo(null);
+  }
+
+  /* ---------- history ---------- */
+  function renderList(){
+    var ul = $('list'), q = query.toLowerCase(); ul.innerHTML = '';
+    var shown = history.filter(function(i){ return !q || i.name.toLowerCase().indexOf(q) > -1 || (i.data || '').toLowerCase().indexOf(q) > -1; });
+    $('search').hidden = history.length < 2; $('clear').hidden = !history.length; $('empty').hidden = shown.length > 0;
+    $('empty').textContent = history.length ? 'No matches.' : 'No QR codes yet.';
+    shown.forEach(function(item){
+      var li = document.createElement('li'), cv = document.createElement('canvas'); cv.width = cv.height = 192; paint(cv, item);
+      cv.addEventListener('click', function(){ show(item); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      var info = document.createElement('div'); info.className = 'info';
+      var tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = (TYPES[item.type] || TYPES.url).l;
+      var b = document.createElement('b'); b.textContent = item.name;
+      var s = document.createElement('span'); s.textContent = summary(item);
+      info.append(tg, b, s);
+      var acts = document.createElement('div'); acts.className = 'acts';
+      [['PNG', function(){ pngBlob(item, 1024).then(function(bl){ saveFile('qr-' + slug(item.name) + '.png', bl); }); }],
+       ['SVG', function(){ saveFile('qr-' + slug(item.name) + '.svg', svgOf(item)); }],
+       ['Edit', function(){ startEdit(item); }],
+       ['Delete', function(){ history = history.filter(function(h){ return h.id !== item.id; }); if (editingId === item.id) stopEdit(); persist(); renderList(); }]
+      ].forEach(function(a){ var bt = document.createElement('button'); bt.className = 'ghost sm' + (a[0] === 'Delete' ? ' danger' : ''); bt.textContent = a[0]; bt.addEventListener('click', a[1]); acts.append(bt); });
+      li.append(cv, info, acts); ul.append(li);
+    });
+  }
+
+  $('gen').addEventListener('click', function(){
+    var t = $('type').value, name = $('name').value.trim(), data;
+    $('err').textContent = '';
+    if (!name) { $('err').textContent = 'Please enter a name.'; $('name').focus(); return; }
+    try { data = encode(t, values()); } catch(e){ $('err').textContent = typeof e === 'string' ? e : 'Could not build this QR code.'; return; }
+    var item;
+    if (editingId) {
+      item = history.filter(function(h){ return h.id === editingId; })[0];
+      if (!item) { stopEdit(); return; }
+      item.name = name; item.type = t; item.f = values(); item.data = data; item.fg = $('fg').value; item.bg = $('bg').value; item.logo = logo;
+      stopEdit(); toast('Changes saved');
+    } else {
+      item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name, type: t, f: values(), data: data, fg: $('fg').value, bg: $('bg').value, logo: logo, ts: Date.now() };
+      history.unshift(item);
+    }
+    try { matrix(item); } catch(e){ $('err').textContent = 'Too much data for a QR code. Shorten it.'; history = history.filter(function(h){ return h !== item; }); return; }
+    persist(); show(item); renderList(); $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  /* ---------- logo ---------- */
+  $('logobtn').addEventListener('click', function(){ $('logofile').click(); });
+  $('logorm').addEventListener('click', function(){ setLogo(null); });
+  $('logofile').addEventListener('change', function(e){
+    var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){ var i = new Image(); i.onload = function(){
+      var c = document.createElement('canvas'), k = Math.min(1, 128 / Math.max(i.width, i.height)); c.width = Math.max(1, Math.round(i.width * k)); c.height = Math.max(1, Math.round(i.height * k));
+      c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); setLogo(c.toDataURL('image/png'));
+    }; i.onerror = function(){ toast('That image could not be read.'); }; i.src = r.result; };
+    r.readAsDataURL(f);
+  });
+
+  /* ---------- bulk ---------- */
+  $('csvbtn').addEventListener('click', function(){ $('csv').click(); });
+  $('csv').addEventListener('change', function(e){ var f = e.target.files[0]; e.target.value = ''; if (!f) return; var r = new FileReader(); r.onload = function(){ $('bulk').value = r.result; }; r.readAsText(f); });
+  function parseBulk(txt){
+    var out = [], skipped = 0;
+    txt.split(/\r?\n/).forEach(function(line){
+      line = line.trim(); if (!line) return;
+      var name = '', url = null, cells;
+      if (line.indexOf('\t') > -1) {
+        cells = line.split('\t').map(function(s){ return s.trim().replace(/^"|"$/g, ''); }); name = cells[0];
+        var u = cells.slice(1).filter(function(c){ return /^https?:\/\//i.test(c); })[0] || cells[1]; url = normalize(u);
+      } else {
+        var i = line.indexOf(','), left = i > -1 ? line.slice(0, i).trim().replace(/^"|"$/g, '') : '';
+        if (i > -1 && !/[./]/.test(left)) { name = left; url = normalize(line.slice(i + 1).trim().replace(/^"|"$/g, '')); } else url = normalize(line);
+      }
+      if (!url) { skipped++; return; }
+      if (!name) { try { name = new URL(url).hostname.replace(/^www\./, ''); } catch(e){ name = 'qr'; } }
+      out.push({ name: name.slice(0, 60), url: url });
+    });
+    return { items: out, skipped: skipped };
+  }
+  $('bulkgo').addEventListener('click', function(){
+    var p = parseBulk($('bulk').value), msg = $('bulkmsg'); msg.textContent = '';
+    if (!p.items.length) { msg.textContent = 'No valid URLs found.'; return; }
+    if (p.items.length > 200) { msg.textContent = 'Please keep it to 200 lines at a time.'; return; }
+    var btn = $('bulkgo'), zip = new JSZip(), made = []; btn.disabled = true; btn.textContent = 'Generating...';
+    var chain = Promise.resolve();
+    p.items.forEach(function(row, idx){
+      chain = chain.then(function(){
+        var item = { id: Date.now().toString(36) + idx + Math.random().toString(36).slice(2, 5), name: row.name, type: 'url', f: { url: row.url }, data: row.url, fg: $('fg').value, bg: $('bg').value, logo: logo, ts: Date.now() + (p.items.length - idx) };
+        return pngBlob(item, 1024).then(function(bl){ zip.file(('0' + (idx + 1)).slice(-2) + '-' + slug(row.name) + '.png', bl); made.push(item); });
+      });
+    });
+    chain.then(function(){ return zip.generateAsync({ type: 'blob' }); }).then(function(z){
+      history = made.reverse().concat(history); persist(); renderList();
+      saveFile('qr-codes.zip', z);
+      msg.style.color = 'var(--muted)'; msg.textContent = made.length + ' QR codes made' + (p.skipped ? ', ' + p.skipped + ' line(s) skipped (no valid URL)' : '') + ' and added to history.';
+    }).catch(function(){ msg.style.color = ''; msg.textContent = 'Something went wrong while building the ZIP.'; })
+    .then(function(){ btn.disabled = false; btn.textContent = 'Generate ZIP'; });
+  });
+
+  /* ---------- scanner ---------- */
+  var detector = null; try { if ('BarcodeDetector' in window) detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch(e){}
+  function decode(canvas){
+    if (detector) return detector.detect(canvas).then(function(r){ return r[0] ? r[0].rawValue : null; }).catch(function(){ return null; });
+    var d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height), c = window.jsQR && jsQR(d.data, d.width, d.height);
+    return Promise.resolve(c ? c.data : null);
+  }
+  function gotScan(text){
+    stopCam(); $('scantext').textContent = text; $('scanres').hidden = false; $('scanmsg').textContent = '';
+    var a = $('open'); if (/^https?:\/\//i.test(text)) { a.href = text; a.hidden = false; } else a.hidden = true;
+  }
+  function stopCam(){
+    clearInterval(timer); timer = null;
+    if (stream) { stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+    $('video').hidden = true; $('camgo').textContent = 'Start camera';
+  }
+  $('camgo').addEventListener('click', function(){
+    if (stream) { stopCam(); return; }
+    $('scanmsg').textContent = ''; $('scanres').hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $('scanmsg').textContent = 'Camera is not available here. Try "Scan image" instead.'; return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(s){
+      stream = s; var v = $('video'); v.srcObject = s; v.hidden = false; v.play(); $('camgo').textContent = 'Stop camera';
+      var cv = document.createElement('canvas'), busy = false;
+      timer = setInterval(function(){
+        if (busy || !v.videoWidth) return; busy = true;
+        cv.width = v.videoWidth; cv.height = v.videoHeight; cv.getContext('2d').drawImage(v, 0, 0);
+        decode(cv).then(function(t){ busy = false; if (t) gotScan(t); });
+      }, 250);
+    }).catch(function(){ $('scanmsg').textContent = 'Camera access was blocked or is unavailable. Try "Scan image" instead.'; });
+  });
+  $('imgbtn').addEventListener('click', function(){ $('imgfile').click(); });
+  $('imgfile').addEventListener('change', function(e){
+    var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    var r = new FileReader(); $('scanmsg').textContent = ''; $('scanres').hidden = true;
+    r.onload = function(){ var i = new Image(); i.onload = function(){
+      var c = document.createElement('canvas'), k = Math.min(1, 1200 / Math.max(i.width, i.height)); c.width = Math.round(i.width * k); c.height = Math.round(i.height * k);
+      c.getContext('2d').drawImage(i, 0, 0, c.width, c.height);
+      decode(c).then(function(t){ if (t) gotScan(t); else $('scanmsg').textContent = 'No QR code found in that image.'; });
+    }; i.src = r.result; }; r.readAsDataURL(f);
+  });
+  $('copy').addEventListener('click', function(){
+    var t = $('scantext').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast('Copied'); }).catch(function(){ toast('Select the text to copy it.'); });
+  });
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll('#tabs button').forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.t); }); });
+  $('type').addEventListener('change', buildFields);
+  $('cancel').addEventListener('click', stopEdit);
+  $('search').addEventListener('input', function(e){ query = e.target.value.trim(); renderList(); });
+  $('fg').addEventListener('input', contrast); $('bg').addEventListener('input', contrast);
+  $('dlpng').addEventListener('click', function(){ if (current) pngBlob(current, 1024).then(function(b){ saveFile('qr-' + slug(current.name) + '.png', b); }); });
+  $('dlsvg').addEventListener('click', function(){ if (current) saveFile('qr-' + slug(current.name) + '.svg', svgOf(current)); });
+  $('clear').addEventListener('click', function(){ if (confirm('Delete all saved QR codes?')) { history = []; persist(); renderList(); } });
+  buildFields(); showTab('create'); renderList();
+  if ('serviceWorker' in navigator) window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+})();
+</script>
+</body>
+</html>
